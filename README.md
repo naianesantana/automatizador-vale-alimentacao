@@ -13,6 +13,6 @@ A ideia surgiu da necessidade da atual empresa que atuo de validar o cálculo po
     2.  **Valor Mensal**: Resumo consolidado com o total que cada funcionário deve receber no mês.
 
 ## Tecnologias Utilizadas:
-* **Python **
+* **Python**
 * **Pandas**: Para manipulação e análise de dados.
 * **Openpyxl**: Engine para suporte à exportação de arquivos Excel.
