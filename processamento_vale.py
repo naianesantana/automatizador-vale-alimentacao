@@ -22,7 +22,7 @@ def converter_tempo(df,coluna):
 #Função com as regras de negócio para sucesso no cálculo do valor do vale alimentação diário
 def calcular_valor_vale(linha):
     carga_horaria = linha['Carga horária']
-    trabalhado = linha['Trabalhado']
+    trabalhado = linha['Total horas']
     dia_semana = linha['Dia semana']
 
     if trabalhado == 0:
@@ -83,21 +83,27 @@ df_agrupado = converter_tempo(df_agrupado,'Trabalhado')
 df_agrupado = converter_tempo(df_agrupado,'Ocorrência')
 
 df_agrupado['Tipo'] = df_agrupado['Tipo'].fillna('-')
-df_agrupado['Trabalhado'] = df_agrupado['Trabalhado'] + df_agrupado['Ocorrência']
+df_agrupado['Total horas'] = df_agrupado['Trabalhado'] + df_agrupado['Ocorrência']
 
 #5. Crição de um df final que receberá o valor diário do VA
-df_final = df_agrupado[['Data','Dia semana', 'Funcionário','Trabalhado','Carga horária']]
+df_final = df_agrupado[['Data','Dia semana', 'Funcionário','Trabalhado','Carga horária','Tipo','Ocorrência','Total horas']]
 
-df_final['Valor VA'] = df_final[['Trabalhado','Carga horária','Dia semana']].apply(calcular_valor_vale, axis=1)
+df_final['Valor VA'] = df_final[['Total horas','Carga horária','Dia semana']].apply(calcular_valor_vale, axis=1)
 df_final['Data'] = df_final['Data'].dt.strftime('%d/%m/%Y')
+
 
 #6. Emissão do relatório em Excel com os valores diários e mensal - agrupado por funcionário
 resultado = df_final.groupby('Funcionário')['Valor VA'].sum().reset_index()
+relatorio_diario = df_final.groupby('Funcionário')
 
-nome_arquivo = 'Relatorio-VA.xlsx'
+nome_arquivo = 'Relatorio-VA1.xlsx'
 
 with pd.ExcelWriter(nome_arquivo) as writer:
-    df_final.to_excel(writer,sheet_name='Relatorio Diário',index=False)
     resultado.to_excel(writer,sheet_name='Valor Mensal',index=False)
+
+    nome_func = df_final['Funcionário']
+    grupo = df_final.groupby('Funcionário').groups
+    for nome_func,grupo in relatorio_diario:
+        grupo.to_excel(writer,sheet_name=f'{nome_func}',index=False)
 
     print('Relatório salvo!')
